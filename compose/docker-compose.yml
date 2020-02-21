@@ -1,0 +1,75 @@
+version: '2'
+services:
+    database:
+        container_name: "mysql-nextcloud"
+        environment:
+            MYSQL_ROOT_PASSWORD:
+        image: "mysql:latest"
+        restart: always
+        volumes:
+            - "/root/nextcloud/mysql:/var/lib/mysql"
+            - "./init/my.cnf:/etc/my.cnf"
+            - "./init/init.sql:/docker-entrypoint-initdb.d/init.sql"
+        expose:
+            - 3306
+        command: mysqld --default-authentication-plugin=mysql_native_password
+    nextcloud:
+        container_name: "nextcloud"
+        depends_on:  
+            - database
+        image: "nextcloud:fpm"
+        links:
+            - database
+        expose: 
+            - 9000
+        ports: 
+            - "6800:6800"
+        environment:
+            NEXTCLOUD_TRUSTED_DOMAINS:
+            NEXTCLOUD_UPDATE: 1
+            MYSQL_DATABASE: "nextcloud"
+            MYSQL_USER: "nextclouduser"
+            MYSQL_HOST: "database"
+            NEXTCLOUD_DATA_DIR: "/var/www/html/data"
+        restart: always
+        volumes:
+            - "/etc/letsencrypt:/etc/letsencrypt"
+            - "/root/nextcloud/data:/var/www/html/data"
+            - "./init/init.sh:/init.sh"
+            - "./init/aria2.conf:/root/aria2/aria2.conf"
+            - "./init/onstop.sh:/root/aria2/onstop.sh"
+        command:
+            - /bin/sh
+            - -c
+            - |
+                if type aria2c > /dev/null 2>&1; then :
+                else
+                    apt-get update > /dev/null
+                    apt-get install -y cron aria2 procps > /dev/null
+                    chown -R www-data:www-data /var/www/html
+                fi
+                if [ ! -d /usr/Downloads ]; then
+                    mkdir /usr/Downloads
+                    chown -R www-data:www-data /usr/Downloads
+                fi
+                if [ ! -x /root/aria2/onstop.sh ]; then
+                    chmod +x /root/aria2/onstop.sh
+                fi
+                service cron start
+                aria2c --conf-path /root/aria2/aria2.conf -D
+                php-fpm
+    nginx:
+        image: nginx
+        container_name: "nginx"
+        ports:
+            - 8080:80
+            - 8088:443
+        links:
+            - nextcloud
+        depends_on:
+            - nextcloud
+        volumes:
+            - ./init/nginx.conf:/etc/nginx/nginx.conf:ro
+        volumes_from:
+            - nextcloud
+        restart: always
