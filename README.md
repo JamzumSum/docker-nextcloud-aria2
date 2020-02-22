@@ -27,6 +27,20 @@ __需要修改的地方:__
 
 * \<dbpassword\>: 替换, 作为nextcloud数据库密码
 
+`/root/nextcloud/compose/init/nginx.conf`
+
+nginx证书路径
+
+* ssl_certificate
+* ssl_certificate_key
+
+`/root/nextcloud/compose/init/aria2.conf`
+
+aria2证书路径
+
+* rpc-certificate
+* rpc-certificate-key
+
 ## 启动容器
 
 ~~~ shell
