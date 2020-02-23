@@ -2,10 +2,12 @@
 
 ## 开启的功能
 
-* 专为小内存机控制了数据库内存(100M-)
+> 其实就是我自用的一套服务的docker打包
+
+* 专为小内存机控制了数据库内存占用(100M-)
 * ssl & http2
 * 运行于nextcloud容器中的aria2
-* 安装nextcloud容器缺失的cron
+* 安装nextcloud容器缺失的cron(do not work...?)
 
 ## 配置
 
@@ -13,6 +15,7 @@
 * 安装`docker-compose`
 * 拉取本项目
 * 理论上compose文件夹应处于`/root/nextcloud/compose`
+* 运行于nginx容器中的v2ray
 
 __需要填写的地方:__
 
@@ -40,6 +43,12 @@ aria2证书路径
 
 * rpc-certificate
 * rpc-certificate-key
+
+__需要增加的文件__
+
+`/root/v2ray/config.json`
+
+> 由于websocket配置文件比较烂大街, 我自己配置v2ray又比较熟, 鉴于配置文件其实比较sensitive, 我就不传了. 需要请自行解决.
 
 ## 启动容器
 
